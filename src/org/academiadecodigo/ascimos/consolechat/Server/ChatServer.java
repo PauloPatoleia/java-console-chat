@@ -1,7 +1,6 @@
 package org.academiadecodigo.ascimos.consolechat.Server;
 
 import java.net.*;
-import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,15 +12,15 @@ public class ChatServer {
     public static final int PORT = 9000;
 
     private ServerSocket serverSocket;
-    private List<ClientThread> clientThreads = new ArrayList<ClientThread>();
+    private List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
 
     public void connect(Socket socket) {
 
         try {
-            ClientThread newClient = new ClientThread(socket);
+            ClientHandler newClient = new ClientHandler(socket);
             UUID randomUserId = UUID.randomUUID();
-            newClient.setName(("User-" + randomUserId.hashCode()).replace("-", ""));
-            clientThreads.add(newClient);
+            newClient.setName(("User@" + randomUserId.hashCode()).replace("-", ""));
+            clientHandlers.add(newClient);
             broadcast(newClient, newClient.getName() + " has joined the room.");
         } catch (IOException e) {
             e.printStackTrace();
@@ -29,9 +28,9 @@ public class ChatServer {
     }
 
 
-    public void disconnect(ClientThread client) {
+    public void disconnect(ClientHandler client) {
 
-        Iterator<ClientThread> itr = clientThreads.iterator();
+        Iterator<ClientHandler> itr = clientHandlers.iterator();
 
         while(itr.hasNext()) {
 
@@ -43,9 +42,9 @@ public class ChatServer {
     }
 
 
-    public void broadcast(ClientThread activeClient, String message) {
+    public void broadcast(ClientHandler activeClient, String message) {
 
-        for(ClientThread client: clientThreads) {
+        for(ClientHandler client: clientHandlers) {
 
             if(!client.equals(activeClient)) {
                 client.sendMessage(message);
@@ -78,13 +77,13 @@ public class ChatServer {
         }
     }
 
-    private class ClientThread extends Thread {
+    private class ClientHandler extends Thread {
 
         private Socket clientSocket;
         private BufferedReader input;
         private PrintWriter output;
 
-        public ClientThread(Socket socket) throws IOException {
+        public ClientHandler(Socket socket) throws IOException {
 
             this.clientSocket = socket;
             input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -93,7 +92,8 @@ public class ChatServer {
         }
 
         public void readMessage(String message) {
-            broadcast(this, message);
+
+            broadcast(this, this.getName() + " - " + message);
         }
 
         public void sendMessage(String message) {
