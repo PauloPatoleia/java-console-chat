@@ -1,0 +1,7 @@
+build
+doc
+*.iml
+.ds_store
+out
+.idea
+java-console-chat.iml
